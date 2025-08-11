@@ -3,7 +3,7 @@ Amazon Scraper Service (FastAPI + Playwright + Gemini + JWT)
 Microservicio para scrapear listados de Amazon, purificar la información y hacer consultas con Gemini sobre los datos resultantes. Arquitectura modular lista para crecer con base de datos y autenticación JWT (HS256).
 
 ------------------------------------------------------------
-Características
+# Características
 ------------------------------------------------------------
 - Autenticación JWT simétrica (HS256): emisión de tokens y validación de firma/expiración.
 - /scrape (protegido): Playwright → extrae tarjetas, guarda
@@ -13,9 +13,9 @@ Características
 - /healthz (público) y /readiness (público u opcionalmente protegido): salud y preparación.
 - Windows-friendly: WindowsProactorEventLoopPolicy y arranque sin reload para evitar errores con Playwright.
 
-------------------------------------------------------------
-Arquitectura
-------------------------------------------------------------
+# Arquitectura
+
+```
 amazon_service/
 |
 |- app/
@@ -42,11 +42,12 @@ amazon_service/
 |- requirements.txt
 |- .env                     # claves y configuración
 |- .gitignore
+```
 
 Asegúrate de que cada carpeta dentro de app/ tenga su __init__.py.
 
 ------------------------------------------------------------
-Requisitos
+# Requisitos
 ------------------------------------------------------------
 - Python 3.10+
 - Playwright
