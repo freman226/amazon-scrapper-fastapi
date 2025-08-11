@@ -5,7 +5,7 @@ venv/
 ENV/
 env/
 .venv/
-
+.env
 # ===================
 # Archivos generados por Python
 # ===================
