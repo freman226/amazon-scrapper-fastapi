@@ -7,6 +7,11 @@ from fastapi import FastAPI, Query
 from starlette.concurrency import run_in_threadpool
 from scraper import scrape_amazon  # síncrono
 from datetime import datetime, timezone
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+from starlette.concurrency import run_in_threadpool
+
 
 
 # ✅ Recomendado en Windows para evitar problemas con subprocess (Playwright)
@@ -18,6 +23,14 @@ app = FastAPI(title="Amazon Scraper Service")
 SERVICE_NAME = "amazon-scraper"
 VERSION = "1.0.0"
 STARTED_AT = datetime.now(timezone.utc)
+
+load_dotenv()
+API_KEY = os.getenv("GOOGLE_API_KEY")
+if not API_KEY:
+    raise RuntimeError("Falta GOOGLE_API_KEY en .env")
+genai.configure(api_key=API_KEY)
+
+GEMINI_MODEL = "gemini-2.5-flash-lite"
 
 @app.get("/health")
 def health():
@@ -173,6 +186,28 @@ def normalize_children_text(children_text_obj: dict):
         "badges":  _find_badges(lines),
     }
 
+def _load_structured_data():
+    if not DATA_FILE.exists():
+        raise FileNotFoundError("data.json no existe. Ejecuta /scrape primero.")
+    return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+
+def _ask_gemini_sync(question: str, data: list[str | dict]) -> str:
+    # Arma un prompt compacto (evita enviar basura)
+    prompt = f"""
+Tengo una lista de productos en JSON (campos: title, rating, reviews, price, delivery, badges, id).
+Responde de forma clara y en español. Si algo no está en los datos, dilo.
+
+Datos:
+{json.dumps(data, ensure_ascii=False, indent=2)}
+
+Pregunta del usuario:
+{question}
+"""
+    model = genai.GenerativeModel(GEMINI_MODEL)
+    resp = model.generate_content(prompt)
+    return resp.text
+
+
 # =========================
 #         Endpoints
 # =========================
@@ -208,3 +243,28 @@ async def scrape_and_purify(url: str = Query(..., description="URL de búsqueda 
         "raw_items": len(raw_data),
         "structured_items": len(structured)
     }
+
+from pydantic import BaseModel
+
+class AskBody(BaseModel):
+    question: str
+
+@app.post("/ask")
+async def ask_endpoint(body: AskBody):
+    """
+    Usa Gemini para responder preguntas sobre data.json.
+    Requiere haber ejecutado /scrape antes (para generar data.json).
+    """
+    try:
+        data = _load_structured_data()
+        # Ejecutar la llamada a Gemini en threadpool para no bloquear el loop
+        answer = await run_in_threadpool(_ask_gemini_sync, body.question, data)
+        return {
+            "status": "success",
+            "model": GEMINI_MODEL,
+            "answer": answer
+        }
+    except FileNotFoundError as e:
+        return {"status": "error", "message": str(e)}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
