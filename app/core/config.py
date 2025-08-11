@@ -20,3 +20,10 @@ DATA_FILE = DATA_DIR / "data.json"
 
 # Placeholder para DB a futuro
 DATABASE_URL = os.getenv("DATABASE_URL")  # e.g. "postgresql+psycopg://..."
+# Token de acceso para autenticación
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_EXPIRES_MINUTES = int(os.getenv("JWT_EXPIRES_MINUTES", "60"))
+AUTH_CLIENT_ID = os.getenv("AUTH_CLIENT_ID")
+AUTH_CLIENT_SECRET = os.getenv("AUTH_CLIENT_SECRET")

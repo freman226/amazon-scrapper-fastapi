@@ -1,14 +1,19 @@
-# app/api/routers/scrape.py
 import json
-from fastapi import APIRouter, Query
+
+from fastapi import APIRouter, Query, Depends
 from starlette.concurrency import run_in_threadpool
 from app.services.scraper import scrape_amazon
 from app.services.purify import normalize_children_text
 from app.core.config import RAW_FILE, DATA_FILE
+from app.core.auth import require_jwt
 
-router = APIRouter(prefix="/scrape", tags=["scrape"])
+router = APIRouter(
+    prefix="/scrape",
+    tags=["scrape"],
+    dependencies=[Depends(require_jwt)]   # 👈 protege todo el router
+)
 
-@router.get("")
+@router.post("")
 async def scrape_and_purify(url: str = Query(..., description="URL de búsqueda de Amazon")):
     raw_data = await run_in_threadpool(scrape_amazon, url)
     RAW_FILE.write_text(json.dumps(raw_data, indent=2, ensure_ascii=False), encoding="utf-8")
