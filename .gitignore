@@ -1,0 +1,52 @@
+# ===================
+# Entorno virtual
+# ===================
+venv/
+ENV/
+env/
+.venv/
+
+# ===================
+# Archivos generados por Python
+# ===================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.cache/
+.pytest_cache/
+
+# ===================
+# Archivos de configuración local
+# ===================
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+
+# ===================
+# IDEs / Editores
+# ===================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===================
+# Logs
+# ===================
+*.log
+*.out
+*.err
+
+# ===================
+# Archivos generados por el scraper
+# ===================
+scrapped_info.json
+data.json
